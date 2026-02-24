@@ -1,6 +1,6 @@
 # IGAdBlock
 
-Ad blocker for Instagram
+Ad blocker for Instagram on a jailed iOS device
 
 ## Features
 
@@ -20,7 +20,7 @@ Take the dylib from the releases, along with a dylib of a Instagram sideloading 
 
 ## Tested On
 
-- Instagram version 417.0 on iPhone 15 Pro Max running iOS 26.2.1
+- Instagram version 417.0 on a jailed iPhone 15 Pro Max running iOS 26.2.1
 
 
 
