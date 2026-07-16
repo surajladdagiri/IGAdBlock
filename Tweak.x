@@ -1,4 +1,5 @@
 #import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
 
 
@@ -55,6 +56,93 @@
 
 
 
+
+%hook UIViewController
+
+- (void)presentViewController:(UIViewController *)viewControllerToPresent animated:(BOOL)flag completion:(void (^)(void))completion {
+    // Look up the Swift class dynamically
+    Class nagClass = objc_getClass("IGCoreRootTestFlightNagPlugin.TestFlightUpdateNudgeViewController");
+    
+    // Check if the view controller about to be shown is our culprit
+    if (nagClass && [viewControllerToPresent isKindOfClass:nagClass]) {
+        NSLog(@"[IGAdBlock] Prevented TestFlight update nudge from presenting entirely!");
+        
+        // Safely execute completion block if the calling function expected one
+        if (completion) {
+            completion();
+        }
+        return; // Halt execution here, skipping %orig
+    }
+    
+    // Otherwise, carry on as normal
+    %orig;
+}
+
+%end
+
+
+
+
+%group SwiftHooks
+%hook SwiftSundialPlaceholderClass
+
+- (id)objectsForListAdapter:(id)arg1 {
+    NSArray *original_feed = %orig;
+    NSMutableArray *filtered_feed = [NSMutableArray array];
+    for (id item in original_feed) {
+        if ([item isKindOfClass:%c(IGAdItem)]) {
+            NSLog(@"[IGAdBlock] Swift Reel ad removed.");
+            continue;
+        }
+        [filtered_feed addObject:item];
+    }
+    return filtered_feed;
+}
+
+%end
+%end
+
+
+%group TestFlightNagHooks
+%hook TestFlightNagPlaceholderClass
+
+- (void)viewDidAppear:(BOOL)animated {
+    %orig;
+    
+    // Dismiss the view controller immediately when it shows up
+    [(UIViewController *)self dismissViewControllerAnimated:YES completion:nil];
+    
+    NSLog(@"[IGAdBlock] TestFlight update nudge bypassed successfully!");
+}
+
+%end
+%end
+
+
+
+
+
 %ctor {
     %init;
+
+
+	Class swiftSundialClass = objc_getClass("IGSundialFeed.IGSundialFeedDataSource");
+    if (swiftSundialClass) {
+        // Map the placeholder hook name to the actual runtime class pointer
+        %init(SwiftHooks, SwiftSundialPlaceholderClass = swiftSundialClass);
+        NSLog(@"[IGAdBlock] Successfully initialized Swift hooks.");
+    } else {
+        NSLog(@"[IGAdBlock] Warning: Could not find Swift class at runtime.");
+    }
+
+
+
+
+	Class nagClass = objc_getClass("IGCoreRootTestFlightNagPlugin.TestFlightUpdateNudgeViewController");
+    if (nagClass) {
+        %init(TestFlightNagHooks, TestFlightNagPlaceholderClass = nagClass);
+        NSLog(@"[IGAdBlock] Found and hooked TestFlight Nag Controller.");
+    } else {
+        NSLog(@"[IGAdBlock] Could not find TestFlight Nag Controller class.");
+    }
 }
