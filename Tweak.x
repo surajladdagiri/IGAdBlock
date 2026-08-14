@@ -83,8 +83,8 @@
 
 
 
-%group SwiftHooks
-%hook SwiftSundialPlaceholderClass
+%group SwiftHooksV1
+%hook SwiftSundialPlaceholderClassV1
 
 - (id)objectsForListAdapter:(id)arg1 {
     NSArray *original_feed = %orig;
@@ -100,6 +100,29 @@
 }
 
 %end
+
+%end
+
+
+
+%group SwiftHooksV2
+%hook SwiftSundialPlaceholderClassV2
+
+- (id)objectsForListAdapter:(id)arg1 {
+    NSArray *original_feed = %orig;
+    NSMutableArray *filtered_feed = [NSMutableArray array];
+    for (id item in original_feed) {
+        if ([item isKindOfClass:%c(IGAdItem)]) {
+            NSLog(@"[IGAdBlock] Swift Reel ad removed.");
+            continue;
+        }
+        [filtered_feed addObject:item];
+    }
+    return filtered_feed;
+}
+
+%end
+
 %end
 
 
@@ -126,15 +149,23 @@
     %init;
 
 
-	Class swiftSundialClass = objc_getClass("IGSundialFeed.IGSundialFeedDataSource");
-    if (swiftSundialClass) {
-        // Map the placeholder hook name to the actual runtime class pointer
-        %init(SwiftHooks, SwiftSundialPlaceholderClass = swiftSundialClass);
-        NSLog(@"[IGAdBlock] Successfully initialized Swift hooks.");
-    } else {
-        NSLog(@"[IGAdBlock] Warning: Could not find Swift class at runtime.");
-    }
 
+	Class swiftSundialClassV1 = objc_getClass("IGSundialFeed.IGSundialFeedDataSource");
+    Class swiftSundialClassV2 = objc_getClass("IGSundialFeedDataSource.IGSundialFeedDataSource");
+    if (swiftSundialClassV1) {
+        // Map the placeholder hook name to the actual runtime class pointer
+        %init(SwiftHooksV1, SwiftSundialPlaceholderClassV1 = swiftSundialClassV1);
+        NSLog(@"[IGAdBlock] Successfully initialized Swift V1 hooks.");
+    } 
+
+    if (swiftSundialClassV2) {
+        // Map the placeholder hook name to the actual runtime class pointer
+        %init(SwiftHooksV2, SwiftSundialPlaceholderClassV2 = swiftSundialClassV2);
+        NSLog(@"[IGAdBlock] Successfully initialized Swift V2 hooks.");
+    }
+    if (!swiftSundialClassV1 && !swiftSundialClassV2) {
+        NSLog(@"[IGAdBlock] Warning: Could not find Swift classes at runtime.");
+    }
 
 
 

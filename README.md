@@ -2,6 +2,8 @@
 
 Ad blocker for Instagram on a jailed iOS device
 
+## The version number of the tweak now corresponds to the last tested version of Instagram
+
 ## Features
 
 - Removes ads on reels
@@ -20,11 +22,9 @@ Take the dylib from the releases, along with a dylib of a Instagram sideloading 
 
 ## Tested On
 
-<<<<<<< HEAD
 - Instagram version 417.0 on a jailed iPhone 15 Pro Max running iOS 26.2.1
-=======
 - Instagram version 429.0 on iPhone 15 Pro Max running iOS 26.2.1
->>>>>>> 302edde (Fixed adblocking on 429.0.0)
+- Instagram version 442.0 on iPhone 15 Pro Max running iOS 26.2.1
 
 
 
